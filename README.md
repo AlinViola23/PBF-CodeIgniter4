@@ -55,491 +55,454 @@ Basis data diperlukan untuk sebagian besar pemrograman aplikasi web. Basis data 
 #### Struktur
 - app, public, tests, writable, system
 ## Menjalankan Aplikasi 
-### Server Pengembangan Lokal
-```shell
-php spark serve
-```
-Server pengembangan lokal dapat dikustomisasi dengan tiga opsi baris perintah:
-- Anda dapat menggunakan --hostopsi CLI untuk menentukan host berbeda untuk menjalankan aplikasi di:
-  ```shell
-  php spark serve --host example.dev
-  ```
-- Secara default, server berjalan pada port 8080 tetapi Anda mungkin menjalankan lebih dari satu situs, atau sudah memiliki aplikasi lain yang menggunakan port tersebut. Anda dapat menggunakan --portopsi CLI untuk menentukan opsi lain:
-  ```shell
-  php spark serve --port 8081
-  ```
-- Anda juga dapat menentukan versi PHP tertentu yang akan digunakan, dengan --phpopsi CLI, dengan nilainya disetel ke jalur eksekusi PHP yang ingin Anda gunakan:
-  ```shell
-  php spark serve --php /usr/bin/php7.6.5.4
-  ```
+1. Menjalankan server Pengembangan Lokal
+   ```shell
+   php spark serve
+   ```
+   Server pengembangan lokal dapat dikustomisasi dengan tiga opsi baris perintah:
+   - Anda dapat menggunakan --hostopsi CLI untuk menentukan host berbeda untuk menjalankan aplikasi di:
+     ```shell
+     php spark serve --host example.dev
+     ```
+   - Secara default, server berjalan pada port 8080 tetapi Anda mungkin menjalankan lebih dari satu situs, atau sudah memiliki aplikasi lain yang menggunakan port tersebut. Anda dapat menggunakan --portopsi CLI untuk menentukan opsi lain:
+     ```shell
+     php spark serve --port 8081
+     ```
+   - Anda juga dapat menentukan versi PHP tertentu yang akan digunakan, dengan --phpopsi CLI, dengan nilainya disetel ke jalur eksekusi PHP yang ingin Anda gunakan:
+     ```shell
+     php spark serve --php /usr/bin/php7.6.5.4
+     ```
 ## Membangun Aplikasi Sederhana
 ### Static Pages
-#### Menetapkan Aturan Perutean
-Siapkan aturan routing. Buka file rute yang terletak di app/Config/Routes.php .
-```shell
-<?php
+1. Siapkan aturan routing. Buka file rute yang terletak di app/Config/Routes.php .
+   ```shell
+   <?php
+   
+   use CodeIgniter\Router\RouteCollection;
+   
+   /**
+    * @var RouteCollection $routes
+    */
+   $routes->get('/', 'Home::index');
+   ```
+   Arahan ini mengatakan bahwa setiap permintaan masuk tanpa konten apa pun yang ditentukan harus ditangani oleh index() method di dalam Homepengontrol.
 
-use CodeIgniter\Router\RouteCollection;
-
-/**
- * @var RouteCollection $routes
- */
-$routes->get('/', 'Home::index');
-```
-Arahan ini mengatakan bahwa setiap permintaan masuk tanpa konten apa pun yang ditentukan harus ditangani oleh index() method di dalam Homepengontrol.
-
-Tambahkan baris berikut, setelah arahan rute untuk '/'.
-```shell
-use App\Controllers\Pages;
-
-$routes->get('pages', [Pages::class, 'index']);
-$routes->get('(:segment)', [Pages::class, 'view']);
-```
-Aturan kedua dalam $routesobjek mencocokkan permintaan GET dengan jalur URI /pages , dan dipetakan ke index()metode kelas Pages.Aturan ketiga dalam $routesobjek mencocokkan permintaan GET ke segmen URI menggunakan placeholder (:segment), dan meneruskan parameter ke view()metode kelas Pages.
-#### Buat Pengontrol Halaman 
-Buat file di app/Controllers/Pages.php dengan kode berikut.
-```shell
-<?php
-
-namespace App\Controllers;
-
-class Pages extends BaseController
-{
-    public function index()
-    {
-        return view('welcome_message');
-    }
-
-    public function view($page = 'home')
-    {
-        // ...
-    }
-}
-```
-#### Buat Tampilan
-Buat header di app/Views/templates/header.php dan tambahkan kode berikut:
-```shell
-<!doctype html>
-<html>
-<head>
-    <title>CodeIgniter Tutorial</title>
-</head>
-<body>
-
-    <h1><?= esc($title) ?></h1>
-```
-Header berisi kode HTML dasar yang ingin Anda tampilkan sebelum memuat tampilan utama, bersama dengan judul. Ini juga akan menampilkan $titlevariabel, yang akan kita definisikan nanti di pengontrol. Selanjutnya, buat footer di app/Views/templates/footer.php yang menyertakan kode berikut:
-```shell
-  <em>&copy; 2022</em>
-</body>
-</html>
-```
-#### Menambahkan Logika Ke Controller
-##### Buat home.php dan about.php
-Sebelumnya Anda menyiapkan pengontrol dengan suatu view() method. Method ini menerima satu parameter, yaitu nama halaman yang akan dimuat. Body halaman statis akan ditempatkan di direktori app/Views/pages .
-
-Di direktori itu, buat dua file bernama home.php dan about.php . Di dalam file tersebut, ketikkan beberapa teks apa pun yang Anda suka dan simpan. Jika Anda ingin tampil tidak orisinal, cobalah “Hello World!”.
-
-Buat file Views/pages/home.php .
-```shell
-Hello World!
-```
-#### Halaman Lengkap::view() Method
-Kembali ke halaman Controller/Pages.php , lengkapi isi pada bagian method view()
-```shell
-<?php
-
-namespace App\Controllers;
-
-use CodeIgniter\Exceptions\PageNotFoundException; // Add this line
-
-class Pages extends BaseController
-{
-    // ...
-
-    public function view($page = 'home')
-    {
-        if (! is_file(APPPATH . 'Views/pages/' . $page . '.php')) {
-            // Whoops, we don't have a page for that!
-            throw new PageNotFoundException($page);
-        }
-
-        $data['title'] = ucfirst($page); // Capitalize the first letter
-
-        return view('templates/header', $data)
-            . view('pages/' . $page)
-            . view('templates/footer');
-    }
-}
-```
-#### Menjalankan Aplikasi
-Dari baris perintah, di root proyek Anda:
-```shell
-php spark serve
-```
-Server web dapat diakses pada port 8080. Jika Anda mengatur field lokasi di browser Anda ke localhost:8080 , Anda akan melihat halaman selamat datang CodeIgniter. Selanjutnya kunjungi localhost:8080/home 
+   Tambahkan baris berikut, setelah arahan rute untuk '/'.
+   ```shell
+   use App\Controllers\Pages;
+   
+   $routes->get('pages', [Pages::class, 'index']);
+   $routes->get('(:segment)', [Pages::class, 'view']);
+   ```
+   Aturan kedua dalam $routesobjek mencocokkan permintaan GET dengan jalur URI /pages , dan dipetakan ke index()metode kelas Pages.Aturan ketiga dalam $routesobjek mencocokkan permintaan GET ke segmen URI menggunakan placeholder (:segment), dan meneruskan parameter ke view()metode kelas Pages.
+2. Buat Pengontrol Halaman di app/Controllers/Pages.php dengan kode berikut.
+   ```shell
+   <?php
+      
+   namespace App\Controllers;
+      
+   class Pages extends BaseController
+   {
+      public function index()
+      {
+         return view('welcome_message');
+      }
+      
+      public function view($page = 'home')
+      {
+         // ...
+      }
+   }
+   ```
+3. Buat Tampilan header di app/Views/templates/header.php dan tambahkan kode berikut:
+   ```shell
+   <!doctype html>
+   <html>
+   <head>
+       <title>CodeIgniter Tutorial</title>
+   </head>
+   <body>
+   
+       <h1><?= esc($title) ?></h1>
+   ```
+   Header berisi kode HTML dasar yang ingin Anda tampilkan sebelum memuat tampilan utama, bersama dengan judul. Ini juga akan menampilkan $titlevariabel, yang akan kita definisikan nanti di pengontrol. Selanjutnya, buat footer di app/Views/templates/footer.php yang menyertakan kode berikut:
+   ```shell
+     <em>&copy; 2022</em>
+   </body>
+   </html>
+   ```
+4. Buat home.php dan about.php di file Views/pages/home.php .
+   Sebelumnya Anda menyiapkan pengontrol dengan suatu view() method. Method ini menerima satu parameter, yaitu nama halaman yang akan dimuat. Body halaman statis akan ditempatkan di direktori app/Views/pages .
+   Di direktori itu, buat dua file bernama home.php dan about.php . Di dalam file tersebut, ketikkan beberapa teks apa pun yang Anda suka dan simpan. Jika Anda ingin tampil tidak orisinal, cobalah “Hello World!”.
+   ```shell
+   Hello World!
+   ```
+5. Kembali ke halaman Controller/Pages.php , lengkapi isi pada bagian method view()
+   ```shell
+   <?php
+   
+   namespace App\Controllers;
+   
+   use CodeIgniter\Exceptions\PageNotFoundException; // Add this line
+   
+   class Pages extends BaseController
+   {
+       // ...
+   
+       public function view($page = 'home')
+       {
+           if (! is_file(APPPATH . 'Views/pages/' . $page . '.php')) {
+               // Whoops, we don't have a page for that!
+               throw new PageNotFoundException($page);
+           }
+   
+           $data['title'] = ucfirst($page); // Capitalize the first letter
+   
+           return view('templates/header', $data)
+               . view('pages/' . $page)
+               . view('templates/footer');
+       }
+   }
+   ```
+6. Menjalankan aplikasi dari baris perintah, di root proyek Anda:
+   ```shell
+   php spark serve
+   ```
+   Server web dapat diakses pada port 8080. Jika Anda mengatur field lokasi di browser Anda ke localhost:8080 , Anda akan melihat halaman selamat datang CodeIgniter. Selanjutnya kunjungi localhost:8080/home 
 ### News Section
-#### Buat Database untuk Digunakan
-Buat database ci4tutorial pada MySQL dengan nama table news.
-```shell
-CREATE TABLE news (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    title VARCHAR(128) NOT NULL,
-    slug VARCHAR(128) NOT NULL,
-    body TEXT NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE slug (slug)
-);
-```
-Masukkan data berikut pada table news menggunakan INSERT.
-```shell
-INSERT INTO news VALUES
-(1,'Elvis sighted','elvis-sighted','Elvis was sighted at the Podunk internet cafe. It looked like he was writing a CodeIgniter app.'),
-(2,'Say it isn\'t so!','say-it-isnt-so','Scientists conclude that some programmers have a sense of humor.'),
-(3,'Caffeination, Yes!','caffeination-yes','World\'s largest coffee shop open onsite nested coffee shop for staff only.');
-```
-#### Hubungkan ke Basis Data 
-Buka file konfigurasi lokal .env yang anda buat saat menginstall CodeIgniter. Pastikan Anda telah mengkonfigurasi database dengan benar.
-```shell
-database.default.hostname = localhost
-database.default.database = ci4tutorial
-database.default.username = root
-database.default.password = root
-database.default.DBDriver = MySQLi
-```
-#### Menyiapkan Model 
-##### Buat Model News
-Buka direktori app/Models dan buat file baru bernama NewsModel.php dan tambahkan kode berikut.
-```shell
-<?php
-
-namespace App\Models;
-
-use CodeIgniter\Model;
-
-class NewsModel extends Model
-{
-    protected $table = 'news';
-}
-```
-##### Tambahkan Metode NewsModel::getNews()
-Tambahkan kode berikut ke model Anda.
-```shell
-  public function getNews($slug = false)
-    {
-        if ($slug === false) {
-            return $this->findAll();
-        }
-
-        return $this->where(['slug' => $slug])->first();
-    }
-```
-#### Tampilkan News
-##### Menambahkan Aturan Perutean
-Ubah file app/Config/Routes.php Anda , sehingga terlihat seperti berikut:
-```shell
-<?php
-
-// ...
-
-use App\Controllers\News; // Add this line
-use App\Controllers\Pages;
-
-$routes->get('news', [News::class, 'index']);           // Add this line
-$routes->get('news/(:segment)', [News::class, 'show']); // Add this line
-
-$routes->get('pages', [Pages::class, 'index']);
-$routes->get('(:segment)', [Pages::class, 'view']);
-```
-#### Buat Pengontrol News
-Buat pengontrol baru di app/Controllers/News.php .
-```shell
-<?php
-
-namespace App\Controllers;
-
-use App\Models\NewsModel;
-
-class News extends BaseController
-{
-    public function index()
-    {
-        $model = model(NewsModel::class);
-
-        $data['news'] = $model->getNews();
-    }
-
-    public function show($slug = null)
-    {
-        $model = model(NewsModel::class);
-
-        $data['news'] = $model->getNews($slug);
-    }
-}
-```
-##### Lengkap News::index() Metode
-Ubah index()metodenya menjadi seperti ini:
-```shell
-<?php
-
-namespace App\Controllers;
-
-use App\Models\NewsModel;
-
-class News extends BaseController
-{
-    public function index()
-    {
-        $model = model(NewsModel::class);
-
-        $data = [
-            'news'  => $model->getNews(),
-            'title' => 'News archive',
-        ];
-
-        return view('templates/header', $data)
-            . view('news/index')
-            . view('templates/footer');
-    }
-
-    // ...
-}
-```
-##### Buat news/index pada File Views
-Buat app/Views/news/index.php dan tambahkan potongan kode berikutnya.
-```shell
-<h2><?= esc($title) ?></h2>
-
-<?php if (! empty($news) && is_array($news)): ?>
-
-    <?php foreach ($news as $news_item): ?>
-
-        <h3><?= esc($news_item['title']) ?></h3>
-
-        <div class="main">
-            <?= esc($news_item['body']) ?>
-        </div>
-        <p><a href="/news/<?= esc($news_item['slug'], 'url') ?>">View article</a></p>
-
-    <?php endforeach ?>
-
-<?php else: ?>
-
-    <h3>No News</h3>
-
-    <p>Unable to find any news for you.</p>
-
-<?php endif ?>
-```
-##### Lengkapi News::show() Method
-Kembali ke Newspengontrol dan perbarui show()metode dengan yang berikut:
-```shell
-<?php
-
-namespace App\Controllers;
-
-use App\Models\NewsModel;
-use CodeIgniter\Exceptions\PageNotFoundException;
-
-class News extends BaseController
-{
-    // ...
-
-    public function show($slug = null)
-    {
-        $model = model(NewsModel::class);
-
-        $data['news'] = $model->getNews($slug);
-
-        if (empty($data['news'])) {
-            throw new PageNotFoundException('Cannot find the news item: ' . $slug);
-        }
-
-        $data['title'] = $data['news']['title'];
-
-        return view('templates/header', $data)
-            . view('news/view')
-            . view('templates/footer');
-    }
-}
-```
-##### Buat news/view pada File Views
-Membuat tampilan terkait di app/Views/news/view.php . Letakkan kode berikut di file ini.
-```shell
-<h2><?= esc($news['title']) ?></h2>
-<p><?= esc($news['body']) ?></p>
-```
-Arahkan browser Anda ke halaman “news”, yaitu localhost:8080/news
+1. Buat database ci4tutorial pada MySQL dengan nama table news.
+   ```shell
+   CREATE TABLE news (
+       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+       title VARCHAR(128) NOT NULL,
+       slug VARCHAR(128) NOT NULL,
+       body TEXT NOT NULL,
+       PRIMARY KEY (id),
+       UNIQUE slug (slug)
+   );
+   ```
+   Masukkan data berikut pada table news menggunakan INSERT.
+   ```shell
+   INSERT INTO news VALUES
+   (1,'Elvis sighted','elvis-sighted','Elvis was sighted at the Podunk internet cafe. It looked like he was writing a CodeIgniter app.'),
+   (2,'Say it isn\'t so!','say-it-isnt-so','Scientists conclude that some programmers have a sense of humor.'),
+   (3,'Caffeination, Yes!','caffeination-yes','World\'s largest coffee shop open onsite nested coffee shop for staff only.');
+   ```
+2. Hubungkan ke basis data, buka file konfigurasi lokal .env yang anda buat saat menginstall CodeIgniter. Pastikan Anda telah mengkonfigurasi database dengan benar.
+   ```shell
+   database.default.hostname = localhost
+   database.default.database = ci4tutorial
+   database.default.username = root
+   database.default.password = root
+   database.default.DBDriver = MySQLi
+   ```
+3. Menyiapkan Model, buat Model News. Buka direktori app/Models dan buat file baru bernama NewsModel.php dan tambahkan kode berikut.
+   ```shell
+   <?php
+   
+   namespace App\Models;
+   
+   use CodeIgniter\Model;
+   
+   class NewsModel extends Model
+   {
+       protected $table = 'news';
+   }
+   ```
+4. Tambahkan Metode NewsModel::getNews().
+   ```shell
+     public function getNews($slug = false)
+       {
+           if ($slug === false) {
+               return $this->findAll();
+           }
+   
+           return $this->where(['slug' => $slug])->first();
+       }
+   ```
+5. Ubah file app/Config/Routes.php Anda , sehingga terlihat seperti berikut:
+   ```shell
+   <?php
+   
+   // ...
+   
+   use App\Controllers\News; // Add this line
+   use App\Controllers\Pages;
+   
+   $routes->get('news', [News::class, 'index']);           // Add this line
+   $routes->get('news/(:segment)', [News::class, 'show']); // Add this line
+   
+   $routes->get('pages', [Pages::class, 'index']);
+   $routes->get('(:segment)', [Pages::class, 'view']);
+   ```
+6. Buat pengontrol baru di app/Controllers/News.php .
+   ```shell
+   <?php
+   
+   namespace App\Controllers;
+   
+   use App\Models\NewsModel;
+   
+   class News extends BaseController
+   {
+       public function index()
+       {
+           $model = model(NewsModel::class);
+   
+           $data['news'] = $model->getNews();
+       }
+   
+       public function show($slug = null)
+       {
+           $model = model(NewsModel::class);
+   
+           $data['news'] = $model->getNews($slug);
+       }
+   }
+   ```
+7. Lengkap News::index() Metode. Ubah index()metodenya menjadi seperti ini:
+   ```shell
+   <?php
+   
+   namespace App\Controllers;
+   
+   use App\Models\NewsModel;
+   
+   class News extends BaseController
+   {
+       public function index()
+       {
+           $model = model(NewsModel::class);
+   
+           $data = [
+               'news'  => $model->getNews(),
+               'title' => 'News archive',
+           ];
+   
+           return view('templates/header', $data)
+               . view('news/index')
+               . view('templates/footer');
+       }
+   
+       // ...
+   }
+   ```
+8. Buat app/Views/news/index.php dan tambahkan potongan kode berikutnya.
+   ```shell
+   <h2><?= esc($title) ?></h2>
+   
+   <?php if (! empty($news) && is_array($news)): ?>
+   
+       <?php foreach ($news as $news_item): ?>
+   
+           <h3><?= esc($news_item['title']) ?></h3>
+   
+           <div class="main">
+               <?= esc($news_item['body']) ?>
+           </div>
+           <p><a href="/news/<?= esc($news_item['slug'], 'url') ?>">View article</a></p>
+   
+       <?php endforeach ?>
+   
+   <?php else: ?>
+   
+       <h3>No News</h3>
+   
+       <p>Unable to find any news for you.</p>
+   
+   <?php endif ?>
+   ```
+9. Kembali ke News Controller dan perbarui show()metode dengan yang berikut:
+   ```shell
+   <?php
+   
+   namespace App\Controllers;
+   
+   use App\Models\NewsModel;
+   use CodeIgniter\Exceptions\PageNotFoundException;
+   
+   class News extends BaseController
+   {
+       // ...
+   
+       public function show($slug = null)
+       {
+           $model = model(NewsModel::class);
+   
+           $data['news'] = $model->getNews($slug);
+   
+           if (empty($data['news'])) {
+               throw new PageNotFoundException('Cannot find the news item: ' . $slug);
+           }
+   
+           $data['title'] = $data['news']['title'];
+   
+           return view('templates/header', $data)
+               . view('news/view')
+               . view('templates/footer');
+       }
+   }
+   ```
+10. Membuat tampilan terkait di app/Views/news/view.php . Letakkan kode berikut.
+   ```shell
+   <h2><?= esc($news['title']) ?></h2>
+   <p><?= esc($news['body']) ?></p>
+   ```
+   Arahkan browser Anda ke halaman “news”, yaitu localhost:8080/news
 ### Create News Items
-#### Aktifkan Filter CSRF
-Sebelum membuat formulir, aktifkan perlindungan CSRF.
+1. Sebelum membuat formulir, aktifkan perlindungan CSRF. Buka file app/Config/Filters.php dan perbarui $methodsproperti seperti berikut:
+   ```shell
+   <?php
+   
+   namespace Config;
+   
+   use CodeIgniter\Config\BaseConfig;
+   
+   class Filters extends BaseConfig
+   {
+       // ...
+   
+       public $methods = [
+           'post' => ['csrf'],
+       ];
+   
+       // ...
+   }
+   ```
+2. Sebelum menambahkan news items ke dalam aplikasi CodeIgniter, Anda harus menambahkan rules tambahan ke file app/Config/Routes.php . Pastikan file berisi sebagai berikut ini:
+   ```shell
+   <?php
+   
+   // ...
+   
+   use App\Controllers\News;
+   use App\Controllers\Pages;
+   
+   $routes->get('news', [News::class, 'index']);
+   $routes->get('news/new', [News::class, 'new']); // Add this line
+   $routes->post('news', [News::class, 'create']); // Add this line
+   $routes->get('news/(:segment)', [News::class, 'show']);
+   
+   $routes->get('pages', [Pages::class, 'index']);
+   $routes->get('(:segment)', [Pages::class, 'view']);
+   ```
+3. Buat Form tampilan baru di app/Views/news/create.php :
+   ```shell
+   <h2><?= esc($title) ?></h2>
+   
+   <?= session()->getFlashdata('error') ?>
+   <?= validation_list_errors() ?>
+   
+   <form action="/news" method="post">
+       <?= csrf_field() ?>
+   
+       <label for="title">Title</label>
+       <input type="input" name="title" value="<?= set_value('title') ?>">
+       <br>
+   
+       <label for="body">Text</label>
+       <textarea name="body" cols="45" rows="4"><?= set_value('body') ?></textarea>
+       <br>
+   
+       <input type="submit" name="submit" value="Create news item">
+   </form>
+   ```
+   Fungsi ini session()digunakan untuk mendapatkan objek Sesi, dan session()->getFlashdata('error')digunakan untuk menampilkan kesalahan terkait perlindungan CSRF kepada pengguna. Namun, secara default, jika pemeriksaan validasi CSRF gagal, pengecualian akan dilempar, sehingga belum berfungsi.
+   
+   Fungsi validation_list_errors()yang disediakan oleh Form Helper digunakan untuk melaporkan kesalahan terkait validasi form.
+   
+   Fungsi ini csrf_field()membuat masukan tersembunyi dengan token CSRF yang membantu melindungi dari beberapa serangan umum.
 
-Buka file app/Config/Filters.php dan perbarui $methodsproperti seperti berikut:
-```shell
-<?php
-
-namespace Config;
-
-use CodeIgniter\Config\BaseConfig;
-
-class Filters extends BaseConfig
-{
-    // ...
-
-    public $methods = [
-        'post' => ['csrf'],
-    ];
-
-    // ...
-}
-```
-#### Menambahkan Routing Rules
-Sebelum menambahkan news items ke dalam aplikasi CodeIgniter, Anda harus menambahkan rules tambahan ke file app/Config/Routes.php . Pastikan file berisi sebagai berikut ini:
-```shell
-<?php
-
-// ...
-
-use App\Controllers\News;
-use App\Controllers\Pages;
-
-$routes->get('news', [News::class, 'index']);
-$routes->get('news/new', [News::class, 'new']); // Add this line
-$routes->post('news', [News::class, 'create']); // Add this line
-$routes->get('news/(:segment)', [News::class, 'show']);
-
-$routes->get('pages', [Pages::class, 'index']);
-$routes->get('(:segment)', [Pages::class, 'view']);
-```
-#### Buat Form
-##### Buat news/buat File View
-Buat tampilan baru di app/Views/news/create.php :
-```shell
-<h2><?= esc($title) ?></h2>
-
-<?= session()->getFlashdata('error') ?>
-<?= validation_list_errors() ?>
-
-<form action="/news" method="post">
-    <?= csrf_field() ?>
-
-    <label for="title">Title</label>
-    <input type="input" name="title" value="<?= set_value('title') ?>">
-    <br>
-
-    <label for="body">Text</label>
-    <textarea name="body" cols="45" rows="4"><?= set_value('body') ?></textarea>
-    <br>
-
-    <input type="submit" name="submit" value="Create news item">
-</form>
-```
-Fungsi ini session()digunakan untuk mendapatkan objek Sesi, dan session()->getFlashdata('error')digunakan untuk menampilkan kesalahan terkait perlindungan CSRF kepada pengguna. Namun, secara default, jika pemeriksaan validasi CSRF gagal, pengecualian akan dilempar, sehingga belum berfungsi.
-
-Fungsi validation_list_errors()yang disediakan oleh Form Helper digunakan untuk melaporkan kesalahan terkait validasi form.
-
-Fungsi ini csrf_field()membuat masukan tersembunyi dengan token CSRF yang membantu melindungi dari beberapa serangan umum.
-
-Fungsi set_value()yang disediakan oleh Form Helper digunakan untuk menampilkan data masukan lama ketika terjadi kesalahan.
-##### Pengendalian News
-Kembali ke News Controller Anda.
-###### Tambahkan News::new() untuk Menampilkan Form
-Buatlah metode untuk menampilkan form HTML yang telah di buat.
-```shell
-<?php
-
-namespace App\Controllers;
-
-use App\Models\NewsModel;
-use CodeIgniter\Exceptions\PageNotFoundException;
-
-class News extends BaseController
-{
-    // ...
-
-    public function new()
-    {
-        helper('form');
-
-        return view('templates/header', ['title' => 'Create a news item'])
-            . view('news/create')
-            . view('templates/footer');
-    }
-}
-```
-Mennggunakan fungsi helper() untuk membantu Form
-###### Tambahkan News::create() untuk membuat News Item
-Selanjutnya, buat metode untuk membuat News Items dari data yang dikirimkan.
-Anda akan melakukan tiga hal di sini:
-1. Memeriksa apakah data yang dikirimkan lolos aturan validasi.
-2. Menyimpan item berita ke database.
-3. Mengembalikan halaman sukses.
-```shell
-<?php
-
-namespace App\Controllers;
-
-use App\Models\NewsModel;
-use CodeIgniter\Exceptions\PageNotFoundException;
-
-class News extends BaseController
-{
-    // ...
-
-    public function create()
-    {
-        helper('form');
-
-        $data = $this->request->getPost(['title', 'body']);
-
-        // Checks whether the submitted data passed the validation rules.
-        if (! $this->validateData($data, [
-            'title' => 'required|max_length[255]|min_length[3]',
-            'body'  => 'required|max_length[5000]|min_length[10]',
-        ])) {
-            // The validation fails, so returns the form.
-            return $this->new();
-        }
-
-        // Gets the validated data.
-        $post = $this->validator->getValidated();
-
-        $model = model(NewsModel::class);
-
-        $model->save([
-            'title' => $post['title'],
-            'slug'  => url_title($post['title'], '-', true),
-            'body'  => $post['body'],
-        ]);
-
-        return view('templates/header', ['title' => 'Create a news item'])
-            . view('news/success')
-            . view('templates/footer');
-    }
-}
-```
-###### Kembalikan Halaman Sukses
-Buat tampilan di app/Views/news/success.php dan tulis pesan sukses.
-```shell
-<p>News item created successfully.</p>
-```
-#### Updating NewsModel
-Edit NewsModel untuk memberikannya daftar fields yang dapat diperbarui di $allowedFields properti.
-```shell
-<?php
-
-namespace App\Models;
-
-use CodeIgniter\Model;
-
-class NewsModel extends Model
-{
-    protected $table = 'news';
-
-    protected $allowedFields = ['title', 'slug', 'body'];
-}
-```
-Arahkan browser lokal tempat anda menginstall CodeIgniter dan tambahkan /news/new ke URL.
+   Fungsi set_value()yang disediakan oleh Form Helper digunakan untuk menampilkan data masukan lama ketika terjadi kesalahan.
+4. Kembali ke News Controller Anda tambahkan News::new() untuk Menampilkan Form. Buatlah metode untuk menampilkan form HTML yang telah di buat.
+   ```shell
+   <?php
+   
+   namespace App\Controllers;
+   
+   use App\Models\NewsModel;
+   use CodeIgniter\Exceptions\PageNotFoundException;
+   
+   class News extends BaseController
+   {
+       // ...
+   
+       public function new()
+       {
+           helper('form');
+   
+           return view('templates/header', ['title' => 'Create a news item'])
+               . view('news/create')
+               . view('templates/footer');
+       }
+   }
+   ```
+   Mennggunakan fungsi helper() untuk membantu Form
+5. Selanjutnya, buat method untuk membuat News Items di app/Controllers/News.php dari data yang dikirimkan.
+   ```shell
+   <?php
+   
+   namespace App\Controllers;
+   
+   use App\Models\NewsModel;
+   use CodeIgniter\Exceptions\PageNotFoundException;
+   
+   class News extends BaseController
+   {
+       // ...
+   
+       public function create()
+       {
+           helper('form');
+   
+           $data = $this->request->getPost(['title', 'body']);
+   
+           // Checks whether the submitted data passed the validation rules.
+           if (! $this->validateData($data, [
+               'title' => 'required|max_length[255]|min_length[3]',
+               'body'  => 'required|max_length[5000]|min_length[10]',
+           ])) {
+               // The validation fails, so returns the form.
+               return $this->new();
+           }
+   
+           // Gets the validated data.
+           $post = $this->validator->getValidated();
+   
+           $model = model(NewsModel::class);
+   
+           $model->save([
+               'title' => $post['title'],
+               'slug'  => url_title($post['title'], '-', true),
+               'body'  => $post['body'],
+           ]);
+   
+           return view('templates/header', ['title' => 'Create a news item'])
+               . view('news/success')
+               . view('templates/footer');
+       }
+   }
+   ```
+6. Buat tampilan halaman sukses di app/Views/news/success.php dan tulis pesan sukses.
+   ```shell
+   <p>News item created successfully.</p>
+   ```
+7. Edit NewsModel untuk memberikannya daftar fields yang dapat diperbarui di $allowedFields properti.
+   ```shell
+   <?php
+   
+   namespace App\Models;
+   
+   use CodeIgniter\Model;
+   
+   class NewsModel extends Model
+   {
+       protected $table = 'news';
+   
+       protected $allowedFields = ['title', 'slug', 'body'];
+   }
+   ```
+   Arahkan browser lokal tempat anda menginstall CodeIgniter dan tambahkan /news/new ke URL.
 ## CI4 Overview
 ### Models, Views, dan Controllers
 #### Apa itu MCV?
