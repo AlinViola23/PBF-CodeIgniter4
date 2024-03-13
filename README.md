@@ -505,8 +505,230 @@ Basis data diperlukan untuk sebagian besar pemrograman aplikasi web. Basis data 
    Arahkan browser lokal tempat anda menginstall CodeIgniter dan tambahkan /news/new ke URL.
 ## CI4 Overview
 ### Models, Views, dan Controllers
-#### Apa itu MCV?
 MVC adalah sebuah konsep atau pola desain dalam pengembangan aplikasi yang memisahkan dan mengelompokkan kode berdasarkan fungsinya.
 - Models mengelola data aplikasi dan membantu menegakkan aturan bisnis khusus yang mungkin diperlukan aplikasi. Models biasanya disimpan di app/Models.
 - Views adalah file sederhana, dengan sedikit atau tanpa logika, yang menampilkan informasi kepada pengguna. Views biasanya disimpan di app/Views
 - Controllers bertindak sebagai kode perekat, menyusun data bolak-balik antara tampilan (atau pengguna yang melihatnya) dan penyimpanan data. Controllers biasanya disimpan di app/Controllers
+## General Topics
+### Helpers Functions
+Helpers berfungsi membantu mengerjakan tugas. Setiap file helpers merupakan kumpulan fungsi dalam kategori tertentu. URL  Helpers yaitu membantu dalam membuat tautan, Formulir Helpers  yaitu membantu membuat elemen formulir. Tes Helpers melakukan berbagai rutinitas pemformatan teks, Cookie Helpers mengatur dan membaca cookie, Filesystem Helpers membantu Anda menangani file, dll.
+#### Loading Helper
+1. Membuat file name_helper.php pada app/Helpers
+   ```shell
+   <?php
+
+   helper('name');
+   ```
+2. Untuk memuat file Cookie Helper, buat file app/Helpers/cookie_helper.php
+   ```shell
+   <?php
+
+   helper('cookie');
+   ```
+3. Load Order
+   a. app/Helpers - File yang dimuat di sini selalu dimuat terlebih dahulu.
+   b. {namespace}/Helpers - Semua namespace diulang sesuai urutan yang ditentukan.
+   c. system/Helpers - File dasar dimuat terakhir.
+4. Loading Multiple Helpers
+   ```shell
+   <?php
+
+   helper(['cookie', 'date']);
+   ```
+5. Membuat dari Namespace Tertentu. letakkan file helpers di Modules/Blog/Helpers/blog_helper.php
+   ```shell
+   <?php
+
+   helper('Example\Blog\blog');
+   ```
+   Atau
+   ```shell
+   <?php
+
+   helper('Example\Blog\Helpers\blog');
+   ```
+7. Menggunakan Helpers 
+   ```shell
+   <div>
+   <?= anchor('blog/comments', 'Click Here') ?>
+   </div>
+   ```
+9. Membuat Helpers Khusus dengan diberi nama app/Helpers/info_helper.php
+    ```shell
+    <?php
+
+   // app/Helpers/info_helper.php
+   use CodeIgniter\CodeIgniter;
+   
+   /**
+    * Returns CodeIgniter's version.
+    */
+   function ci_version(): string
+   {
+       return CodeIgniter::CI_VERSION;
+   }
+    ```
+11. Memperluas Helpers menggunakan Array, untuk memperluas Array Helper asli Anda akan membuat file bernama app/Helpers/array_helper.php
+    ```shell
+    <?php
+
+   // any_in_array() is not in the Array Helper, so it defines a new function
+   function any_in_array($needle, $haystack)
+   {
+       $needle = is_array($needle) ? $needle : [$needle];
+   
+       foreach ($needle as $item) {
+           if (in_array($item, $haystack, true)) {
+               return true;
+           }
+       }
+   
+       return false;
+   }
+   
+   // random_element() is included in Array Helper, so it overrides the native function
+   function random_element($array)
+   {
+       shuffle($array);
+   
+       return array_pop($array);
+   }
+    ```
+## Controllers dan Routing
+### Controller
+Controllers mengendalikan alur aplikasi dan menerima input dari pengguna. Controller bertanggung jawab untuk memanggil model yang tepat untuk memproses data, dan kemudian memuat view yang sesuai untuk menampilkan hasil kepada pengguna. 
+### Constructor
+Controller CodeIgniter memiliki konstruktor khusus initController(). Ini akan dipanggil oleh framework setelah __construct()eksekusi konstruktor PHP.
+```shell
+<?php
+
+namespace App\Controllers;
+
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Psr\Log\LoggerInterface;
+
+class Product extends BaseController
+{
+    public function initController(
+        RequestInterface $request,
+        ResponseInterface $response,
+        LoggerInterface $logger
+    ) {
+        parent::initController($request, $response, $logger);
+
+        // Add your code here.
+    }
+
+    // ...
+}
+```
+1. Helpers
+   Anda dapat mendefinisikan array file helpers sebagai properti kelas. Setiap kali pengontrol dimuat, file helpers ini akan secara otomatis dimuat ke dalam memori sehingga Anda dapat menggunakan metodenya di mana saja di dalam pengontrol:
+   ```shell
+   <?php
+
+   namespace App\Controllers;
+   
+   class MyController extends BaseController
+   {
+       protected $helpers = ['url', 'form'];
+   }
+   ```
+   2. forceHTTPS
+      ```shell
+      <?php
+
+      if (! $this->request->isSecure()) {
+          $this->forceHTTPS();
+      }
+      ```
+      Secara default, dan di browser modern yang mendukung header HTTP Strict Transport Security, panggilan ini akan memaksa browser untuk mengonversi panggilan non-HTTPS menjadi panggilan HTTPS selama satu tahun. Anda dapat mengubahnya dengan meneruskan durasi (dalam detik) sebagai parameter pertama:
+      ```shell
+      <?php
+
+      if (! $this->request->isSecure()) {
+          $this->forceHTTPS(31536000); // one year
+      }
+      ```
+   3. Validasi Data
+      Jika merasa lebih mudah untuk menyimpan aturan dalam file konfigurasi, Anda dapat mengganti array $rulesdengan nama grup seperti yang ditentukan dalam app/Config/Validation.php :
+      ```shell
+     <?php
+
+      namespace App\Controllers;
+      
+      class UserController extends BaseController
+      {
+          public function updateUser(int $userID)
+          {
+              if (! $this->validate('userRules')) {
+                  // The validation failed.
+                  return view('users/update', [
+                      'errors' => $this->validator->getErrors(),
+                  ]);
+              }
+      
+              // The validation was successful.
+      
+              // Get the validated data.
+              $validData = $this->validator->getValidated();
+      
+              // ...
+          }
+      }
+      ```
+   4. Contoh membuat class Helloworld di app/Controllers/Helloword.php
+      ```shell
+      <?php
+   
+      namespace App\Controllers;
+      
+      class Helloworld extends BaseController
+      {
+          public function getIndex()
+          {
+              return 'Hello World!';
+          }
+      }
+      ```
+   5. Metode Biasa
+      Tambahkan method getComment di dalam file helloworld.php
+      ```shell
+      <?php
+      namespace App\Controllers;
+     
+      class Helloworld extends BaseController
+      {
+         public function getIndex()
+         {
+             return 'Hello World!';
+         }
+     
+         public function getComment()
+         {
+             return 'I am not flat!';
+         }
+      }
+      ```
+6. Remapping Method Calls
+    ```shell
+    <?php
+    
+    namespace App\Controllers;
+    
+    class Products extends BaseController
+    {
+        public function _remap($method, ...$params)
+        {
+            $method = 'process_' . $method;
+    
+            if (method_exists($this, $method)) {
+                return $this->{$method}(...$params);
+            }
+    
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+    }
+    ```
+
