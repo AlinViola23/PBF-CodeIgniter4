@@ -732,4 +732,56 @@ class Product extends BaseController
     }
 
     ```
-
+## Building Response
+### Views
+1. Membuat Tampilan
+   Buat file dengan nama blog_view.php di app\Views
+   ```shell
+   <html>
+         <head>
+             <title>My Blog</title>
+         </head>
+         <body>
+             <h1>Welcome to my Blog!</h1>
+         </body>
+     </html>
+     ```
+2. Menampilkan Tampilan
+   Sekarang, buat file bernama Blog.php di direktori app/Controllers , dan letakkan ini di dalamnya:
+  ```shell
+    <?php
+    
+    namespace App\Controllers;
+    
+    class Blog extends BaseController
+    {
+        public function index()
+        {
+            return view('blog_view');
+        }
+    }
+   ```
+3. Memuat banyak tampilan
+   ```shell
+   <?php
+    
+    namespace App\Controllers;
+    
+    use CodeIgniter\Controller;
+    
+    class Page extends Controller
+    {
+        public function index()
+        {
+            $data = [
+                'page_title' => 'Your title',
+            ];
+    
+            return view('header')
+                . view('menu')
+                . view('content', $data)
+                . view('footer');
+        }
+    }
+   ```
+    
